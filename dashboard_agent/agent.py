@@ -73,7 +73,18 @@ def answer_question(question, con, client, report=None):
                     "period.".format(plan.period_label or "that period"),
         )
 
-    finding = client.narrate(question, _as_text(columns, rows), notes)
+    # The numbers, the table, the chart and the SQL are all already correct at
+    # this point - narration is the last step and the only one that can fail
+    # without invalidating anything. So a failure there degrades to a plain
+    # description rather than losing the answer. The alternative, showing
+    # nothing, would throw away work that was known to be right.
+    try:
+        finding = client.narrate(question, _as_text(columns, rows), notes)
+    except LLMError as exc:
+        finding = _describe(plan, columns, rows)
+        notes.append("The written summary could not be generated ({}); the "
+                     "description above was produced from the result "
+                     "directly.".format(exc))
 
     return Answer(
         question=question,
@@ -163,6 +174,28 @@ def _relevant_caveats(plan, report):
             )
 
     return notes
+
+
+def _describe(plan, columns, rows):
+    """A finding written by code, for when the narration call fails.
+
+    Deliberately flat. It states what the top row is and nothing more, because
+    anything more interpretive would be code pretending to be judgement.
+    """
+    metric = plan.metric.upper() if plan.metric in ("roas", "cpa", "ctr", "cpc") \
+        else plan.metric
+    period = plan.period_label or "the period covered"
+
+    if plan.group_by == "none":
+        return "{} across {} was {}.".format(metric, period, rows[0][0])
+
+    top = rows[0]
+    lead = "Over {}, the highest {} by {} was {} at {}.".format(
+        period, metric, plan.group_by, top[0], top[1])
+    if len(rows) > 1:
+        lead += " {} groups were returned; {} was next at {}.".format(
+            len(rows), rows[1][0], rows[1][1])
+    return lead
 
 
 def _as_text(columns, rows, max_rows=40):

@@ -24,6 +24,10 @@ BAR_WIDTH = 22
 def _fmt(value, column):
     if value is None:
         return "-"
+    # Checked before int: in Python a bool *is* an int, so without this a
+    # true/false column prints as 1/0.
+    if isinstance(value, bool):
+        return "yes" if value else "no"
     if isinstance(value, float):
         if column in chartmod.MONEY_COLUMNS:
             return "{:,.2f}".format(value)
@@ -46,14 +50,11 @@ def print_table(columns, rows, limit=25):
         for i, text in enumerate(row):
             widths[i] = max(widths[i], len(text))
 
-    # Bar on the first numeric column, if the values are non-negative.
-    bar_col = None
-    for i, name in enumerate(columns):
-        values = [r[i] for r in shown]
-        if values and all(isinstance(v, (int, float)) and v >= 0 for v in values):
-            bar_col = i
-            break
-    peak = max((r[bar_col] for r in shown), default=0) if bar_col is not None else 0
+    bar_col = _bar_column(columns, shown)
+    peak = 0
+    if bar_col is not None:
+        # NULLs are real here - a trailing median has none for the first rows.
+        peak = max((r[bar_col] for r in shown if r[bar_col] is not None), default=0)
 
     header = "  ".join(name.ljust(widths[i]) for i, name in enumerate(columns))
     print("  " + header)
@@ -62,7 +63,7 @@ def print_table(columns, rows, limit=25):
         line = "  ".join(text.ljust(widths[i]) if not _numeric(shown, i)
                          else text.rjust(widths[i])
                          for i, text in enumerate(row))
-        if bar_col is not None and peak:
+        if bar_col is not None and peak and raw[bar_col] is not None:
             filled = int(BAR_WIDTH * (raw[bar_col] / peak))
             line += "  " + "#" * filled
         print("  " + line)
@@ -72,7 +73,40 @@ def print_table(columns, rows, limit=25):
 
 
 def _numeric(rows, index):
-    return all(isinstance(r[index], (int, float)) or r[index] is None for r in rows)
+    return all(
+        (isinstance(r[index], (int, float)) and not isinstance(r[index], bool))
+        or r[index] is None
+        for r in rows
+    )
+
+
+def _bar_column(columns, rows):
+    """Pick the column worth drawing a bar for.
+
+    Not simply the first numeric one. Booleans are numbers in Python, and an id
+    or a day count is numeric without being the point of the table - so prefer a
+    column that actually varies, and skip the ones that only look measurable.
+    """
+    skip = {"campaign_id", "creative_id", "days_running", "rows_reported",
+            "median_rows_reported", "conversions", "clicks", "impressions"}
+    best = None
+    for i, name in enumerate(columns):
+        values = [r[i] for r in rows]
+        if not values:
+            continue
+        if any(isinstance(v, bool) for v in values):
+            continue
+        if not all(isinstance(v, (int, float)) and v >= 0
+                   for v in values if v is not None):
+            continue
+        if len({v for v in values if v is not None}) < 2:
+            continue        # every bar the same length shows nothing
+        if name in skip and best is not None:
+            continue
+        if name not in skip:
+            return i        # a real measure; take the first one
+        best = i if best is None else best
+    return best
 
 
 def write_html(answer, out_dir="out"):

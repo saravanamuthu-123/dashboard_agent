@@ -60,6 +60,15 @@ PERIOD_KINDS = [
 
 MAX_LIMIT = 50
 
+# A ranking of one row is not a ranking. Asked "which campaign made the most",
+# a model sensibly returns limit=1 - but the runner-up is what tells you whether
+# the winner won by a mile or a hair, and a bar chart of a single bar says
+# nothing at all. Code sets a floor; the narration still names the winner.
+MIN_RANK_ROWS = 5
+
+# The shortest history an anomaly can be judged against.
+ANOMALY_MIN_WINDOW_DAYS = 21
+
 
 # ---------------------------------------------------------------------------
 # JSON Schema handed to the provider.
@@ -284,10 +293,22 @@ def validate(raw, data_min, data_max):
     if intent == "rank" and group_by == "none":
         raise PlanError("intent 'rank' needs something to rank; group_by cannot be 'none'")
 
-    if intent == "anomaly" and group_by != "date":
-        # An anomaly question is about movement over time. Silently correcting
-        # this is safe because no other grouping can answer it.
+    if intent == "anomaly":
+        # An anomaly question is about movement over time. No other grouping can
+        # answer it, so correcting this silently is safe.
         group_by = "date"
+
+        # A single day cannot be anomalous on its own. Asked "what happened
+        # yesterday", a model reasonably picks the most recent day - but one
+        # point has nothing to be compared against, and the answer would rest on
+        # an assertion rather than evidence. Code widens the window, because
+        # "how much history does it take to see a change" is a property of the
+        # method, not of the question.
+        earliest = date_to - timedelta(days=ANOMALY_MIN_WINDOW_DAYS)
+        if date_from > earliest:
+            date_from = earliest
+            period_label = "the {} days to {}".format(
+                ANOMALY_MIN_WINDOW_DAYS, date_to)
 
     if intent == "recommend_pause":
         # The metric and grouping are fixed by code for this intent. Whether a
@@ -307,6 +328,8 @@ def validate(raw, data_min, data_max):
         raise PlanError("limit must be a whole number, got {!r}".format(raw.get("limit")))
     if limit <= 0:
         limit = 10 if intent == "rank" else MAX_LIMIT
+    if intent == "rank" and limit < MIN_RANK_ROWS:
+        limit = MIN_RANK_ROWS
     if limit > MAX_LIMIT:
         warnings.append("limit {} reduced to {}".format(limit, MAX_LIMIT))
         limit = MAX_LIMIT
