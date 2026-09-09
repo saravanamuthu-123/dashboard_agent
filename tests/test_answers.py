@@ -270,3 +270,74 @@ def test_every_row_has_an_exchange_rate(con):
         "SELECT count(*) FROM fact_performance WHERE rate_to_usd IS NULL"
     ).fetchone()[0]
     assert unrated == 0
+
+
+# ---------------------------------------------------------------------------
+# End to end, through the whole pipeline, using recorded model responses.
+#
+# The tests above exercise the deterministic half by building plans directly.
+# These run the real path - plan, validate, SQL, execute, narrate - with the
+# model responses replayed from tests/fixtures/llm_responses.json. That covers
+# the part the others cannot: that a plan a real model actually produced still
+# resolves to the right answer.
+# ---------------------------------------------------------------------------
+
+from dashboard_agent.agent import answer_question   # noqa: E402
+from dashboard_agent.llm import OfflineClient       # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def offline():
+    return OfflineClient()
+
+
+def test_end_to_end_spend_by_channel(con, offline):
+    answer = answer_question(
+        "What did we spend by channel over the last eight weeks?", con, offline)
+
+    assert not answer.refused
+    spend = dict(answer.rows)
+    assert spend["meta"] == pytest.approx(51039.90, abs=0.01)
+    # The finding has to carry the figure, not just gesture at it.
+    assert "51,039.90" in answer.finding
+    # And the query that produced it has to be shown.
+    assert "fact_performance" in answer.sql
+
+
+def test_end_to_end_names_the_right_campaign_to_pause(con, offline):
+    answer = answer_question("Which campaign should we turn off?", con, offline)
+
+    assert "LinkedIn B2B Leads" in answer.finding
+    # None of the four traps may be recommended.
+    for trap in ("Awareness", "Traffic Blast", "New Product Test", "Summer Sale"):
+        assert trap not in answer.finding
+
+
+def test_end_to_end_refuses_the_competitor_question(con, offline):
+    answer = answer_question(
+        "How does our spend compare to our competitors?", con, offline)
+
+    assert answer.refused
+    assert not answer.sql          # nothing was computed
+    assert "competitor" in answer.finding.lower()
+
+
+def test_end_to_end_refuses_a_period_outside_the_data(con, offline):
+    """A different reason for refusing than the competitor question: the metric
+    exists, the period does not."""
+    answer = answer_question("What did we spend in January 2026?", con, offline)
+
+    assert answer.refused
+    assert "january" in answer.finding.lower()
+
+
+def test_end_to_end_calls_the_last_day_partial(con, offline):
+    answer = answer_question(
+        "Conversions look like they fell off a cliff on the most recent day. "
+        "What happened?", con, offline)
+
+    # The point of this question is that the drop is a reporting artefact.
+    assert any(word in answer.finding.lower()
+               for word in ("incomplete", "partial"))
+    # And the evidence for that claim must be in the result the user sees.
+    assert "rows_reported" in answer.columns

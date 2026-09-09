@@ -91,11 +91,16 @@ RULES
 Every number you write must appear in the result table. Do not add, average, \
 convert, project or otherwise derive any figure - if it is not in the table, \
 it does not go in the sentence.
-All money is USD, already converted from the original currencies.
+All money is USD, already converted from the original currencies. Write it with \
+a dollar sign and thousands separators: $18,801.27.
+Name figures the way a person would, not by column name - "spend", not \
+"spend_usd"; "return on ad spend", not "roas".
 Lead with the answer to the question. Add one observation only if the table \
 supports it.
 No preamble, no bullet points, no restating the question, no offers of further \
-analysis. Plain prose."""
+analysis.
+Plain text only. No markdown, no asterisks, no headings - this is printed \
+straight to a terminal, where **bold** shows up as asterisks."""
 
 
 class LLMError(Exception):

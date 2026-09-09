@@ -1,0 +1,98 @@
+{
+  "Conversions look like they fell off a cliff on the most recent day. What happened?": {
+    "narration": "The apparent cliff is caused by incomplete data on 2026-09-04: conversions are 1 from 11 rows, versus a recent median of 75 conversions and 30 rows reported. Treat 2026-09-04 as partial, not a real conversion drop.",
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "channel",
+      "intent": "anomaly",
+      "limit": 0,
+      "metric": "conversions",
+      "period_kind": "most_recent_day",
+      "period_n": 0,
+      "refusal_reason": ""
+    }
+  },
+  "How does our spend compare to our competitors?": {
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "none",
+      "intent": "refuse",
+      "limit": 0,
+      "metric": "spend",
+      "period_kind": "all_time",
+      "period_n": 0,
+      "refusal_reason": "The question asks for competitors' spend and a comparison with it, but the dataset contains only this advertiser's own campaign data."
+    }
+  },
+  "What did we spend by channel over the last eight weeks?": {
+    "narration": "Spend was $51,039.90 on Meta, $35,679.09 on Google Search, $22,587.25 on YouTube, and $18,403.39 on LinkedIn. Unattributed spend was $119.79.",
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "channel",
+      "intent": "aggregate",
+      "limit": 0,
+      "metric": "spend",
+      "period_kind": "last_n_weeks",
+      "period_n": 8,
+      "refusal_reason": ""
+    }
+  },
+  "What did we spend in January 2026?": {
+    "plan": {
+      "date_from": "2026-01-01",
+      "date_to": "2026-01-31",
+      "group_by": "none",
+      "intent": "refuse",
+      "limit": 0,
+      "metric": "spend",
+      "period_kind": "explicit",
+      "period_n": 0,
+      "refusal_reason": "The question asks for spend in January 2026, but the dataset only covers June 8, 2026 through September 4, 2026."
+    }
+  },
+  "Which campaign generated the most revenue this quarter?": {
+    "narration": "Brand Search - US generated the most revenue this quarter at $90,848.14. Brand Search - India followed with $34,921.29.",
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "campaign",
+      "intent": "rank",
+      "limit": 1,
+      "metric": "revenue",
+      "period_kind": "quarter_to_date",
+      "period_n": 0,
+      "refusal_reason": ""
+    }
+  },
+  "Which campaign should we turn off?": {
+    "narration": "Turn off LinkedIn B2B Leads (C007), the eligible campaign with the lowest return on ad spend at 0.41. It generated $7,714.03 in revenue from $18,801.27 in spend.",
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "campaign",
+      "intent": "recommend_pause",
+      "limit": 0,
+      "metric": "roas",
+      "period_kind": "all_time",
+      "period_n": 0,
+      "refusal_reason": ""
+    }
+  },
+  "Which creative had the best click-through rate last month?": {
+    "narration": "Creative K002 had the best click-through rate at 0.0801. Rate metrics should be treated with caution because some rows report more clicks than impressions.",
+    "plan": {
+      "date_from": "",
+      "date_to": "",
+      "group_by": "creative",
+      "intent": "rank",
+      "limit": 0,
+      "metric": "ctr",
+      "period_kind": "last_n_months",
+      "period_n": 1,
+      "refusal_reason": ""
+    }
+  }
+}
