@@ -1,0 +1,33 @@
+creative_id,campaign_id,creative_name,format,headline,launched_on
+K001,C001,Brand Search v1,video,Built For Growing Teams,2026-06-08
+K002,C001,Brand Search v2,image,Try It Free For 14 Days,2026-06-10
+K003,C001,Brand Search v3,carousel,The Faster Way To Ship,2026-06-11
+K004,C002,Brand Search v1,video,"Trusted By 10,000 Teams",2026-06-08
+K005,C002,Brand Search v2,image,"Your Ads, Automated",2026-06-08
+K006,C002,Brand Search v3,carousel,Cut Your Cost Per Lead,2026-06-09
+K007,C003,Retargeting v1,video,See It In Action,2026-06-08
+K008,C003,Retargeting v2,image,Save 30% This Week,2026-06-08
+K009,C004,Prospecting v1,image,Built For Growing Teams,2026-06-08
+K010,C004,Prospecting v2,carousel,Try It Free For 14 Days,2026-06-08
+K011,C004,Prospecting v3,video,The Faster Way To Ship,2026-06-12
+K012,C005,Festive Push v1,image,"Trusted By 10,000 Teams",2026-07-01
+K013,C005,Festive Push v2,carousel,"Your Ads, Automated",2026-07-06
+K014,C005,Festive Push v3,video,Cut Your Cost Per Lead,2026-07-03
+K015,C006,YouTube Awareness Q3 v1,image,See It In Action,2026-07-01
+K016,C006,YouTube Awareness Q3 v2,carousel,Save 30% This Week,2026-07-02
+K017,C007,LinkedIn B2B Leads v1,carousel,Built For Growing Teams,2026-06-08
+K018,C007,LinkedIn B2B Leads v2,video,Try It Free For 14 Days,2026-06-13
+K019,C008,Traffic Blast v1,video,The Faster Way To Ship,2026-06-08
+K020,C008,Traffic Blast v2,image,"Trusted By 10,000 Teams",2026-06-10
+K021,C009,Summer Sale v1,image,"Your Ads, Automated",2026-06-08
+K022,C009,Summer Sale v2,carousel,Cut Your Cost Per Lead,2026-06-12
+K023,C010,New Product Test v1,carousel,See It In Action,2026-08-25
+K024,C010,New Product Test v2,video,Save 30% This Week,2026-08-25
+K025,C011,LinkedIn Awareness v1,video,Built For Growing Teams,2026-06-08
+K026,C011,LinkedIn Awareness v2,image,Try It Free For 14 Days,2026-06-12
+K027,C012,Search Generic v1,image,The Faster Way To Ship,2026-06-08
+K028,C012,Search Generic v2,carousel,"Trusted By 10,000 Teams",2026-06-08
+K029,C013,YouTube Product Demo v1,carousel,"Your Ads, Automated",2026-06-15
+K030,C013,YouTube Product Demo v2,video,Cut Your Cost Per Lead,2026-06-17
+K031,C014,Meta Lookalike IN v1,video,See It In Action,2026-06-20
+K032,C014,Meta Lookalike IN v2,image,Save 30% This Week,2026-06-25

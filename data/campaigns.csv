@@ -1,0 +1,15 @@
+campaign_id,campaign_name,channel,objective,currency,daily_budget,start_date,end_date
+C001,Brand Search - India,google_search,conversions,INR,15092.0,2026-06-08,
+C002,Brand Search - US,google_search,conversions,USD,400.0,2026-06-08,
+C003,Retargeting - Meta IN,Meta ,conversions,INR,12157.0,2026-06-08,
+C004,Prospecting - Meta US,meta,conversions,USD,350.0,2026-06-08,
+C005,Festive Push - Meta IN,meta,conversions,INR,25153.0,2026-07-01,
+C006,YouTube Awareness Q3,youtube,awareness,USD,150.0,2026-07-01,
+C007,LinkedIn B2B Leads,linkedin,conversions,USD,250.0,2026-06-08,
+C008,Traffic Blast - YouTube,youtube,traffic,INR,7965.0,2026-06-08,
+C009,Summer Sale - Meta IN,meta,conversions,INR,10061.0,2026-06-08,2026-08-15
+C010,New Product Test,google_search,conversions,USD,40.0,2026-08-25,
+C011,LinkedIn Awareness,linkedin,awareness,USD,120.0,2026-06-08,
+C012,Search Generic - India,google_search,conversions,INR,9223.0,2026-06-08,
+C013,YouTube Product Demo,YouTube,conversions,USD,200.0,2026-06-15,
+C014,Meta Lookalike IN,meta,conversions,INR,7127.0,2026-06-20,
