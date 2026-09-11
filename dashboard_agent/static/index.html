@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Agent</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f8f9fb; --surface: #fff; --ink: #1f2933; --muted: #7b8794;
+    --border: #e4e7eb; --accent: #2563eb; --accent-light: #dbeafe;
+    --green: #047857; --red: #b91c1c; --orange: #d97706;
+  }
+  body {
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    background: var(--ink); color: #fff; padding: 16px 28px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .badge {
+    font-size: 11px; background: var(--accent); padding: 3px 10px;
+    border-radius: 10px; font-weight: 500;
+  }
+  .header .period { margin-left: auto; font-size: 13px; color: #9aa5b1; }
+
+  /* Layout */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* KPI cards */
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--surface); border-radius: 10px; padding: 18px 20px;
+    border: 1px solid var(--border);
+  }
+  .kpi-card .label { font-size: 12px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .04em; margin-bottom: 4px; }
+  .kpi-card .value { font-size: 26px; font-weight: 700; }
+  .kpi-card .value.green { color: var(--green); }
+  .kpi-card .value.red { color: var(--red); }
+
+  /* Charts grid */
+  .charts-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px;
+  }
+  @media (max-width: 800px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface); border-radius: 10px; padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .chart-card h3 { font-size: 13px; color: var(--muted); margin-bottom: 14px;
+    text-transform: uppercase; letter-spacing: .04em; }
+
+  /* Bar chart (CSS only) */
+  .bar-row { display: flex; align-items: center; margin-bottom: 8px; }
+  .bar-label { width: 130px; font-size: 13px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 24px; background: #f0f2f5; border-radius: 4px;
+    overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 4px;
+    transition: width 0.6s ease; }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.orange { background: var(--orange); }
+  .bar-fill.red { background: var(--red); }
+  .bar-value { width: 90px; text-align: right; font-size: 13px; font-weight: 600;
+    padding-left: 10px; flex-shrink: 0; }
+
+  /* Cleaning summary */
+  .cleaning-card {
+    background: var(--surface); border-radius: 10px; padding: 20px;
+    border: 1px solid var(--border); margin-bottom: 24px;
+  }
+  .cleaning-card h3 { font-size: 13px; color: var(--muted); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: .04em; }
+  .cleaning-card li { font-size: 13px; color: #52606d; margin-bottom: 4px; }
+
+  /* Chat section */
+  .chat-section {
+    background: var(--surface); border-radius: 12px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .chat-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: 15px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .chat-body {
+    padding: 20px; min-height: 200px; max-height: 600px;
+    overflow-y: auto;
+  }
+  .chat-input-row {
+    display: flex; padding: 14px 16px; border-top: 1px solid var(--border);
+    background: #fafbfc; gap: 10px;
+  }
+  .chat-input-row input {
+    flex: 1; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; outline: none;
+  }
+  .chat-input-row input:focus { border-color: var(--accent); }
+  .chat-input-row button {
+    padding: 10px 22px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer;
+  }
+  .chat-input-row button:hover { background: #1d4ed8; }
+  .chat-input-row button:disabled { opacity: .5; cursor: default; }
+
+  /* Chat messages */
+  .msg { margin-bottom: 20px; }
+  .msg.user .bubble {
+    background: var(--accent); color: #fff; display: inline-block;
+    padding: 10px 16px; border-radius: 14px 14px 4px 14px;
+    font-size: 14px; max-width: 80%;
+  }
+  .msg.user { text-align: right; }
+  .msg.agent .finding {
+    font-size: 15px; line-height: 1.6; border-left: 3px solid var(--accent);
+    padding: 10px 16px; margin-bottom: 12px; background: #f7f9fc;
+    border-radius: 0 8px 8px 0;
+  }
+  .msg.agent .finding.refused {
+    border-left-color: var(--orange); background: #fffbeb;
+  }
+  .msg.agent .chart-img {
+    max-width: 100%; border-radius: 8px; margin: 10px 0;
+    border: 1px solid var(--border);
+  }
+  .msg.agent .result-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    margin: 10px 0;
+  }
+  .msg.agent .result-table th {
+    text-align: left; padding: 6px 12px; border-bottom: 2px solid var(--border);
+    color: var(--muted); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .03em;
+  }
+  .msg.agent .result-table td {
+    padding: 5px 12px; border-bottom: 1px solid #f0f2f5;
+  }
+  .msg.agent .sql-block {
+    background: #1f2933; color: #e4e7eb; padding: 14px 16px;
+    border-radius: 8px; font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 12px; overflow-x: auto; margin: 10px 0;
+    white-space: pre-wrap;
+  }
+  .msg.agent .notes { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .msg.agent .notes li { margin-bottom: 3px; }
+
+  .msg .toggle-btn {
+    font-size: 12px; color: var(--accent); cursor: pointer; border: none;
+    background: none; padding: 4px 0; margin-top: 6px;
+  }
+  .hidden { display: none; }
+  .loading { color: var(--muted); font-size: 14px; padding: 10px 0; }
+  .loading::after {
+    content: ''; animation: dots 1.4s infinite;
+  }
+  @keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+  }
+
+  /* Quick questions */
+  .quick-questions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .quick-q {
+    padding: 7px 14px; background: var(--accent-light); color: var(--accent);
+    border: 1px solid #bfdbfe; border-radius: 20px; font-size: 12.5px;
+    cursor: pointer; transition: all .15s;
+  }
+  .quick-q:hover { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Dashboard Agent</h1>
+  <span class="badge">AI-Powered</span>
+  <span class="period" id="period"></span>
+</div>
+
+<div class="container">
+  <!-- KPI cards -->
+  <div class="kpi-row" id="kpis"></div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Spend by Channel (USD)</h3>
+      <div id="channel-chart"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Campaign ROAS</h3>
+      <div id="roas-chart"></div>
+    </div>
+  </div>
+
+  <!-- Cleaning summary -->
+  <div class="cleaning-card">
+    <h3>Data Quality</h3>
+    <div id="cleaning-info"></div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-section">
+    <div class="chat-header">💬 Ask a question about the data</div>
+    <div class="chat-body" id="chat-body">
+      <div class="quick-questions" id="quick-q">
+        <span class="quick-q" onclick="ask(this.textContent)">What did we spend by channel over the last eight weeks?</span>
+        <span class="quick-q" onclick="ask(this.textContent)">Which campaign generated the most revenue this quarter?</span>
+        <span class="quick-q" onclick="ask(this.textContent)">Conversions fell off a cliff on the most recent day. What happened?</span>
+        <span class="quick-q" onclick="ask(this.textContent)">Which campaign should we turn off?</span>
+        <span class="quick-q" onclick="ask(this.textContent)">How does our spend compare to our competitors?</span>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="question-input" placeholder="Ask about the ad performance data..."
+             onkeydown="if(event.key==='Enter')ask()">
+      <button id="ask-btn" onclick="ask()">Ask ➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Dashboard ----
+async function loadDashboard() {
+  const res = await fetch('/api/dashboard');
+  const d = await res.json();
+  const k = d.kpis;
+
+  document.getElementById('period').textContent = k.date_from + ' to ' + k.date_to;
+
+  // KPI cards
+  const kpis = [
+    { label: 'Total Spend', value: '$' + num(k.total_spend), cls: '' },
+    { label: 'Total Revenue', value: '$' + num(k.total_revenue), cls: '' },
+    { label: 'Conversions', value: num(k.total_conversions), cls: '' },
+    { label: 'Overall ROAS', value: k.overall_roas.toFixed(2), cls: k.overall_roas >= 1 ? 'green' : 'red' },
+    { label: 'Campaigns', value: k.campaigns, cls: '' },
+    { label: 'Impressions', value: num(k.total_impressions), cls: '' },
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(k =>
+    `<div class="kpi-card"><div class="label">${k.label}</div><div class="value ${k.cls}">${k.value}</div></div>`
+  ).join('');
+
+  // Channel spend bars
+  const maxSpend = Math.max(...d.channel_spend.map(c => c.spend));
+  document.getElementById('channel-chart').innerHTML = d.channel_spend.map(c =>
+    `<div class="bar-row">
+      <span class="bar-label">${c.channel}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(c.spend/maxSpend*100).toFixed(1)}%"></div></div>
+      <span class="bar-value">$${num(c.spend)}</span>
+    </div>`
+  ).join('');
+
+  // Campaign ROAS bars
+  const maxRoas = Math.max(...d.campaign_roas.filter(c=>c.roas).map(c => c.roas), 1);
+  document.getElementById('roas-chart').innerHTML = d.campaign_roas.filter(c=>c.roas!==null).slice(0,10).map(c => {
+    let cls = c.roas >= 2 ? 'green' : c.roas >= 1 ? 'orange' : 'red';
+    let objBadge = c.objective !== 'conversions' ? ` <span style="font-size:10px;color:var(--muted)">(${c.objective})</span>` : '';
+    return `<div class="bar-row">
+      <span class="bar-label">${c.name.replace(/ - .*/,'')}${objBadge}</span>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${(c.roas/maxRoas*100).toFixed(1)}%"></div></div>
+      <span class="bar-value">${c.roas.toFixed(2)}</span>
+    </div>`;
+  }).join('');
+
+  // Cleaning info
+  const cl = d.cleaning;
+  let html = `<p style="font-size:13px;margin-bottom:8px">${num(cl.raw_rows)} raw rows → ${num(cl.clean_rows)} clean (${cl.duplicates_removed} duplicates removed)</p>`;
+  if (cl.caveats.length) html += '<ul>' + cl.caveats.map(c => `<li>${c}</li>`).join('') + '</ul>';
+  document.getElementById('cleaning-info').innerHTML = html;
+}
+
+// ---- Chat ----
+async function ask(text) {
+  const input = document.getElementById('question-input');
+  const q = text || input.value.trim();
+  if (!q) return;
+  input.value = '';
+
+  const body = document.getElementById('chat-body');
+  // Hide quick questions after first use
+  const qq = document.getElementById('quick-q');
+  if (qq) qq.style.display = 'none';
+
+  // User message
+  body.innerHTML += `<div class="msg user"><div class="bubble">${esc(q)}</div></div>`;
+
+  // Loading
+  const loadId = 'load-' + Date.now();
+  body.innerHTML += `<div class="msg agent" id="${loadId}"><div class="loading">Thinking</div></div>`;
+  body.scrollTop = body.scrollHeight;
+
+  document.getElementById('ask-btn').disabled = true;
+
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: q})
+    });
+    const a = await res.json();
+    document.getElementById(loadId).remove();
+
+    let html = '<div class="msg agent">';
+
+    // Finding
+    html += `<div class="finding${a.refused?' refused':''}">${esc(a.finding)}</div>`;
+
+    if (!a.refused) {
+      // Chart
+      if (a.chart_base64) {
+        html += `<img class="chart-img" src="data:image/png;base64,${a.chart_base64}" alt="chart">`;
+      }
+
+      // Table
+      if (a.columns.length && a.rows.length) {
+        const uid = 'tbl-' + Date.now();
+        html += `<button class="toggle-btn" onclick="toggle('${uid}')">▸ Show data table (${a.rows.length} rows)</button>`;
+        html += `<div id="${uid}" class="hidden"><table class="result-table"><thead><tr>`;
+        html += a.columns.map(c => `<th>${esc(c)}</th>`).join('');
+        html += '</tr></thead><tbody>';
+        html += a.rows.slice(0, 20).map(r =>
+          '<tr>' + r.map(v => `<td>${esc(String(v))}</td>`).join('') + '</tr>'
+        ).join('');
+        if (a.rows.length > 20) html += `<tr><td colspan="${a.columns.length}" style="color:var(--muted)">... ${a.rows.length - 20} more rows</td></tr>`;
+        html += '</tbody></table></div>';
+      }
+
+      // SQL
+      if (a.sql) {
+        const sid = 'sql-' + Date.now();
+        html += `<button class="toggle-btn" onclick="toggle('${sid}')">▸ Show SQL query</button>`;
+        html += `<div id="${sid}" class="hidden"><div class="sql-block">${esc(a.sql)}</div></div>`;
+      }
+    }
+
+    // Notes
+    if (a.notes.length) {
+      const nid = 'notes-' + Date.now();
+      html += `<button class="toggle-btn" onclick="toggle('${nid}')">▸ Data notes (${a.notes.length})</button>`;
+      html += `<div id="${nid}" class="hidden"><ul class="notes">${a.notes.map(n=>'<li>'+esc(n)+'</li>').join('')}</ul></div>`;
+    }
+
+    html += '</div>';
+    body.innerHTML += html;
+  } catch(e) {
+    document.getElementById(loadId).innerHTML = `<div class="finding refused">Error: ${esc(e.message)}</div>`;
+  }
+
+  document.getElementById('ask-btn').disabled = false;
+  body.scrollTop = body.scrollHeight;
+}
+
+function toggle(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    btn.textContent = btn.textContent.replace('▸', '▾');
+  } else {
+    el.classList.add('hidden');
+    btn.textContent = btn.textContent.replace('▾', '▸');
+  }
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function num(n) { return Number(n).toLocaleString('en-US'); }
+
+loadDashboard();
+</script>
+</body>
+</html>

@@ -64,6 +64,22 @@ python -m dashboard_agent "Which campaign should we turn off?"
 Useful flags: `--open` writes an HTML report and opens it, `--no-chart` skips the
 PNG, `--data DIR` points at a different extract.
 
+## Web UI
+
+```bash
+python -m dashboard_agent.web --offline     # no API key needed
+python -m dashboard_agent.web               # live model
+```
+
+Opens at http://localhost:8000. Shows:
+- **Dashboard** — KPI cards (spend, revenue, ROAS, conversions), spend by channel,
+  campaign ROAS ranking, and data quality summary
+- **Chat** — type a question, get a finding with a chart, the data table, the SQL
+  that produced it, and data notes. Click the quick-question chips to try the five
+  from the brief.
+
+One HTML file, no build step, no npm.
+
 ## Check the numbers
 
 ```bash
@@ -169,6 +185,8 @@ dashboard_agent/
   agent.py          the request path
   chart.py          chart type chosen from the result shape
   cli.py            terminal output and the HTML report
+  web.py            FastAPI server — dashboard + chat UI
+  static/index.html the entire web UI in one file
   verify.py         re-derives every answer with no model involved
 
 tools/

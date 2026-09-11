@@ -1,6 +1,8 @@
 duckdb==1.5.5
+fastapi==0.141.1
 matplotlib==3.11.1
 openai==3.11.0
 pandas==3.0.5
 pytest==9.1.1
 python-dotenv==1.2.3
+uvicorn==0.52.4
